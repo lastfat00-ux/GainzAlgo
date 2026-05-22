@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUY | GainzAlgo</title>
+  <style>
+    :root { --buy: #10b981; --sell: #ef4444; --bg: #0f172a; --text: #f8fafc; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui; margin: 0; }
+    .skip-link { position: absolute; top: -40px; left: 0; background: #2563eb; color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
+    .skip-link:focus { top: 0; }
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    .signal { display: flex; align-items: center; gap: 0.5rem; font-weight: bold; font-size: 1.25rem; }
+    .buy { color: var(--buy); }
+    .sell { color: var(--sell); }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="container">
+    <h1>GainzAlgo <span role="img" aria-label="chart increasing">📈</span></h1>
+  </header>
+  <main id="main" class="container">
+    <section aria-labelledby="signal-title">
+      <h2 id="signal-title">Current Signal</h2>
+      <div class="signal buy" role="status" aria-label="Buy Signal Detected">
+        <span aria-hidden="true">▲</span>
+        <span>BUY</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
