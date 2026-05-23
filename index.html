@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUY | GainzAlgo</title>
+  <style>
+    :root { --buy: #10b981; --sell: #ef4444; --bg: #0f172a; --text: #f8fafc; --card: #1e293b; --primary: #3b82f6; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui; margin: 0; line-height: 1.5; }
+    .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary); color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
+    .skip-link:focus { top: 0; outline: 3px solid white; }
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; }
+    .signal { display: flex; align-items: center; gap: 0.5rem; font-weight: bold; font-size: 1.5rem; margin-bottom: 1rem; }
+    .buy { color: var(--buy); }
+    .sell { color: var(--sell); }
+    .meter-label { display: block; font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    .meter-bg { background: #334155; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-bottom: 1.5rem; }
+    .meter-fill { background: var(--buy); height: 100%; transition: width 0.3s ease; }
+    .btn { background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: filter 0.2s; }
+    .btn:hover { filter: brightness(1.1); }
+    .btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="container">
+    <h1>GainzAlgo <span role="img" aria-label="chart increasing">📈</span></h1>
+  </header>
+  <main id="main" class="container">
+    <div class="card">
+      <section aria-labelledby="signal-title">
+        <h2 id="signal-title" style="margin-top: 0; font-size: 1.1rem; color: #94a3b8;">Current Signal</h2>
+        <div class="signal buy" role="status" aria-label="Buy Signal Detected">
+          <span aria-hidden="true">▲</span>
+          <span>BUY</span>
+        </div>
+        <div class="meter-container">
+          <span id="meter-desc" class="meter-label">Signal Confidence: 85%</span>
+          <div class="meter-bg" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-labelledby="meter-desc">
+            <div class="meter-fill" style="width: 85%;"></div>
+          </div>
+        </div>
+        <button class="btn" onclick="location.reload()" aria-label="Refresh signal data">Refresh Signal</button>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
