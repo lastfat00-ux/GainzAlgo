@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUY (85%) | GainzAlgo</title>
+  <style>
+    :root { --buy: #10b981; --sell: #ef4444; --warning: #f59e0b; --bg: #0f172a; --text: #f8fafc; --card: #1e293b; --primary: #3b82f6; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui; margin: 0; line-height: 1.5; }
+    .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary); color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
+    .skip-link:focus { top: 0; outline: 3px solid white; }
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; }
+    .signal { display: flex; align-items: center; gap: 0.5rem; font-weight: bold; font-size: 1.5rem; margin-bottom: 1rem; }
+    .buy { color: var(--buy); }
+    .meter-label { display: block; font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    .meter-bg { background: #334155; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-bottom: 1.5rem; }
+    .meter-fill { background: var(--buy); height: 100%; transition: width 0.3s ease; }
+    .btn { background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: filter 0.2s; }
+    .btn:hover { filter: brightness(1.1); }
+    .btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+    .status-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 1rem; display: block; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="container"><h1>GainzAlgo <span role="img" aria-label="chart increasing">📈</span></h1></header>
+  <main id="main" class="container">
+    <div class="card">
+      <section aria-labelledby="signal-title">
+        <h2 id="signal-title" style="margin-top: 0; font-size: 1.1rem; color: #94a3b8;">Current Signal</h2>
+        <div id="signal-display" class="signal buy" role="status" aria-label="Buy Signal Detected"><span aria-hidden="true">▲</span> <span>BUY</span></div>
+        <div class="meter-container" aria-live="polite">
+          <span id="meter-desc" class="meter-label">Signal Confidence: <span id="conf-val">85</span>% (<span id="conf-tier">Strong</span>) <span id="trend-icon" style="font-weight: bold;"></span></span>
+          <div class="meter-bg" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" aria-labelledby="meter-desc"><div id="meter-fill" class="meter-fill" style="width: 85%; background: var(--buy);"></div></div>
+        </div>
+        <button id="refresh-btn" class="btn" aria-label="Refresh signal (Shortcut: R)" title="Shortcut: R">Refresh Signal <small aria-hidden="true" style="opacity: 0.7; font-weight: normal; margin-left: 4px;">[R]</small></button>
+        <span id="last-updated" class="status-meta">Last updated: Just now</span>
+      </section>
+    </div>
+  </main>
+  <script>
+    let lastConf = 85;
+    const btn = document.getElementById('refresh-btn');
+    const refresh = async () => {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      const originalText = btn.innerHTML, originalLabel = btn.ariaLabel;
+      btn.textContent = 'Refreshing...'; btn.ariaLabel = 'Refreshing signal...';
+      await new Promise(r => setTimeout(r, 800));
+      const confidence = Math.floor(Math.random() * 20) + 75;
+      const trend = confidence > lastConf ? 'up' : confidence < lastConf ? 'down' : 'stable';
+      const trendIcon = { up: '↑', down: '↓', stable: '→' }[trend];
+      const trendColor = { up: 'var(--buy)', down: 'var(--sell)', stable: 'var(--text)' }[trend];
+      const trendLabel = { up: 'increasing', down: 'decreasing', stable: 'stable' }[trend];
+      const tier = confidence >= 85 ? 'Strong' : 'Moderate';
+
+      document.title = `BUY (${confidence}%) | GainzAlgo`;
+      document.getElementById('conf-val').textContent = confidence;
+      document.getElementById('conf-tier').textContent = tier;
+      const trendEl = document.getElementById('trend-icon');
+      trendEl.textContent = trendIcon;
+      trendEl.style.color = trendColor;
+      trendEl.ariaLabel = `Trend: ${trendLabel}`;
+
+      lastConf = confidence;
+      const fill = document.getElementById('meter-fill');
+      fill.style.width = `${confidence}%`;
+      fill.style.background = `var(--${tier === 'Strong' ? 'buy' : 'warning'})`;
+      fill.parentElement.setAttribute('aria-valuenow', confidence);
+      document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      btn.textContent = 'Updated!'; btn.ariaLabel = 'Signal updated successfully';
+      setTimeout(() => { btn.innerHTML = originalText; btn.ariaLabel = originalLabel; btn.disabled = false; }, 1000);
+    };
+    btn.addEventListener('click', refresh);
+    document.addEventListener('keydown', e => {
+      if (e.key.toLowerCase() === 'r' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) refresh();
+    });
+  </script>
+</body>
+</html>
