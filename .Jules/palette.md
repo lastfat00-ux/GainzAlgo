@@ -1,0 +1,32 @@
+# Palette Journal
+## 2024-06-15 - Dark Theme Contrast
+**Learning:** In dark-themed interfaces (e.g., background `#1e293b`), standard 500/600-level colors often fail WCAG AA contrast (ratio < 4.5:1). Shifting to 400-level shades and using dark text on primary buttons ensures accessibility without sacrificing the dark aesthetic.
+**Action:** Always verify contrast against dark containers and prefer lighter shades for text-heavy indicators.
+
+## 2024-06-18 - Temporal Context & Staleness
+**Learning:** Global dashboards benefit from dual-time tooltips (Local + UTC) for traceability. Visual "Stale" indicators for data older than a threshold (e.g., 2m) prevent user reliance on outdated signals.
+**Action:** Include UTC context in timestamps and implement explicit staleness warnings.
+
+## 2024-06-19 - Async State Protection
+**Learning:** Concurrent async UI updates (e.g., feedback timeouts vs. data refreshes) can corrupt icon states. Clearing transient timeouts during data refreshes ensures the UI always accurately reflects the latest source of truth.
+**Action:** Use persistent handles to clear transient feedback states upon source data updates.
+
+## 2024-06-20 - Multi-Modal Loading Feedback
+**Learning:** Async transitions benefit from synchronized visual and state resets. Applying a loading overlay while clearing transient feedback (e.g., 'Copied' states) prevents cognitive dissonance during data refreshes.
+**Action:** Implement global loading classes and immediate state resets for async operations.
+
+## 2024-06-21 - Skeleton Shimmer & Perceived Performance
+**Learning:** Skeleton shimmer animations (via CSS pseudo-elements) provide a more dynamic and "active" feel than static opacity changes during async transitions, reducing perceived wait time.
+**Action:** Use CSS-only shimmer gradients to enhance loading states while respecting motion preferences.
+
+## 2024-06-22 - Tab-Level Visibility & Continuity
+**Learning:** Extending status indicators to the favicon (via SVG data URLs) and monitoring network connectivity provides critical "background" awareness, allowing users to monitor volatile data and reliability without keeping the tab in focus.
+**Action:** Synchronize tab-level visuals (favicon, title) with primary UI state and connectivity status.
+
+## 2024-06-23 - Smart Re-synchronization
+**Learning:** Automatically refreshing stale data upon visibility change or connectivity restoration ensures the UI remains a reliable source of truth without manual user action.
+**Action:** Implement automated re-sync for stale data on visibility and online events.
+
+## 2026-06-20 - Threshold Visual Cues & Animation Sync
+**Learning:** Adding explicit visual markers for qualitative boundaries (like "Strong" thresholds) in progress bars reduces cognitive load for scanning data. Synchronizing CSS transitions with JavaScript numeric counters prevents visual jitter during data updates.
+**Action:** Use absolute-positioned markers in meters and align CSS durations with JS intervals.
