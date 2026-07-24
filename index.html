@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>▲ BUY (85%) | GainzAlgo</title>
+  <style>
+    :root { --buy: #34d399; --sell: #fca5a5; --warning: #fbbf24; --bg: #0f172a; --text: #f8fafc; --card: #1e293b; --primary: #60a5fa; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui; margin: 0; line-height: 1.5; }
+    .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary); color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
+    .skip-link:focus { top: 0; outline: 3px solid white; }
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; }
+    .signal { display: flex; align-items: center; gap: 0.5rem; font-weight: bold; font-size: 1.5rem; margin-bottom: 1rem; cursor: pointer; transition: transform 0.2s, filter 0.2s; width: fit-content; border-radius: 4px; padding: 2px 4px; margin-left: -4px; }
+    .signal:hover { filter: brightness(1.2); }
+    .signal:focus-visible { outline: 2px solid white; outline-offset: 4px; }
+    .signal:active { transform: scale(0.98); }
+    .buy { color: var(--buy); }
+    .sell { color: var(--sell); }
+    .glow { text-shadow: 0 0 12px currentColor; animation: glow-pulse 2s infinite ease-in-out; }
+    @keyframes glow-pulse { 0%, 100% { text-shadow: 0 0 12px currentColor; } 50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
+    .spinning { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .meter-label { display: block; font-size: 0.875rem; color: #cbd5e1; margin-bottom: 0.5rem; }
+    .meter-bg { background: #334155; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-bottom: 1.5rem; position: relative; }
+    .meter-fill { background: var(--buy); height: 100%; transition: width 0.5s ease; }
+    .history-track { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; margin-bottom: 1.5rem; height: 32px; align-items: flex-end; position: relative; }
+    .history-pip { flex: 1; border-radius: 2px; transition: height 0.3s ease, transform 0.2s; cursor: pointer; max-width: 48px; }
+    .history-pip:active, .history-pip.copied { transform: scale(0.95) !important; filter: brightness(1.5); }
+    .history-threshold { position: absolute; top: 15%; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,0.2); pointer-events: none; z-index: 0; }
+    .history-pip:hover, .history-pip:focus-visible { transform: scaleY(1.5); }
+    .history-pip:focus-visible { outline: 2px solid white; outline-offset: 2px; z-index: 2; }
+    .threshold-marker { position: absolute; left: 85%; top: 0; width: 2px; height: 100%; background: rgba(255,255,255,0.3); z-index: 1; pointer-events: none; }
+    .btn { background: var(--primary); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: filter 0.2s; }
+    .btn:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+    .btn:active, .btn-active { transform: scale(0.95); filter: brightness(0.9); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); transform: none !important; }
+    .loading { opacity: 0.5; pointer-events: none; transition: opacity 0.2s; position: relative; overflow: hidden; }
+    .loading::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: translateX(-100%); animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+    .status-meta { font-size: 0.75rem; color: #cbd5e1; margin-top: 1rem; display: inline-block; cursor: help; transition: color 0.2s; }
+    .status-meta:hover, .status-meta:focus-visible { color: var(--text); }
+    .status-meta:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 2px; }
+    .stale-warning { color: var(--warning); font-weight: 600; }
+    #clear-btn:hover:not(:disabled) { opacity: 0.8; color: var(--text) !important; }
+    #clear-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    #clear-btn:disabled { opacity: 0.4; cursor: not-allowed !important; }
+    #clear-btn:active:not(:disabled), #clear-btn.btn-active:not(:disabled) { transform: scale(0.95); }
+    #copy-btn:hover:not(:disabled) { background: rgba(96, 165, 250, 0.1) !important; }
+    #copy-btn.copied { color: var(--buy) !important; border-color: var(--buy) !important; background: rgba(52, 211, 153, 0.1) !important; }
+    .live-badge { display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; }
+    .pulse { width: 6px; height: 6px; background: var(--buy); border-radius: 50%; animation: pulse 2s infinite; }
+    .live-badge.stale .pulse { background: var(--warning) !important; animation-duration: 3s; }
+    .live-badge.stale span:last-child { color: var(--warning) !important; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    kbd { background: #334155; border: 1px solid #475569; border-radius: 4px; box-shadow: 0 1px 0 #1e293b; color: #f8fafc; font-family: inherit; font-size: 0.65rem; font-weight: 700; padding: 1px 4px; vertical-align: middle; display: inline-block; transition: transform 0.1s; }
+    .btn:active kbd, .btn-active kbd, .signal:active kbd, #clear-btn:active kbd, #clear-btn.btn-active kbd { transform: scale(0.9) translateY(1px); }
+    button:disabled kbd, [disabled] kbd { opacity: 0.5; border-color: transparent; box-shadow: none; color: #64748b; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .pulse { animation: none; opacity: 0.8; } .spinning { animation: none !important; } .loading::after { display: none; } }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="container"><h1>GainzAlgo <span role="img" aria-label="chart increasing">📈</span></h1></header>
+  <main id="main" class="container">
+    <div class="card">
+      <section aria-labelledby="signal-title">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h2 id="signal-title" style="margin: 0; font-size: 1.1rem; color: #cbd5e1;">Current Signal</h2>
+          <div class="live-badge" aria-label="Live data connection active" role="status"><span class="pulse" aria-hidden="true"></span> <span style="font-size: 0.65rem; font-weight: 800; color: var(--buy); letter-spacing: 0.05em;">LIVE</span></div>
+        </div>
+        <div id="signal-display" class="signal buy glow" role="button" tabindex="0" title="Click or press C to copy" aria-label="Buy Signal Detected. Click or press C to copy." aria-keyshortcuts="c"><span id="signal-icon" aria-hidden="true">▲</span> <span id="signal-text">BUY</span> <kbd aria-hidden="true" style="margin-left: 4px; font-size: 0.65rem;">C</kbd></div>
+        <div class="meter-container">
+          <span id="meter-desc" class="meter-label" title="Confidence >= 85% is Strong, otherwise Moderate.">Signal Confidence: <span id="conf-val">85</span>% (<span id="conf-tier" style="color: var(--buy);">Strong</span>) <span id="trend-icon" role="img" style="font-weight: bold;"></span><span id="conf-delta" style="font-size: 0.75rem; margin-left: 2px;"></span></span>
+          <div class="meter-bg" role="progressbar" aria-valuenow="85" aria-valuetext="85% Strong" aria-valuemin="0" aria-valuemax="100" aria-labelledby="meter-desc">
+            <div class="threshold-marker" title="Strong Threshold (85%)"></div>
+            <div id="meter-fill" class="meter-fill" style="width: 85%; background: var(--buy);"></div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.25rem;">
+          <span style="font-size: 0.65rem; color: #cbd5e1; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+            <span>HISTORY <span style="font-weight: 400; opacity: 0.7;">(PAST → NOW)</span></span>
+            <span id="history-detail" style="font-weight: 600; opacity: 0; transition: opacity 0.15s; text-transform: none;"></span>
+          </span>
+          <button id="clear-btn" style="background: transparent; border: none; color: #cbd5e1; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.2s;" aria-label="Clear signal history (Shortcut: X)" title="Shortcut: X">Clear <kbd aria-hidden="true" style="margin-left: 2px; font-size: 0.6rem;">X</kbd></button>
+        </div>
+        <div id="history-track" class="history-track" aria-label="Recent signal history" role="group"></div>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button id="refresh-btn" class="btn" aria-label="Refresh signal (Shortcut: R)" title="Shortcut: R" aria-keyshortcuts="r"><span id="refresh-icon" aria-hidden="true" style="margin-right: 4px; display: inline-block;">↻</span><span id="refresh-label">Refresh Signal</span> <kbd aria-hidden="true" style="margin-left: 4px;">R</kbd></button>
+          <button id="copy-btn" class="btn" style="background: transparent; border: 1px solid var(--primary); color: var(--primary);" aria-label="Copy signal (Shortcut: C)" title="Shortcut: C" aria-keyshortcuts="c"><span id="copy-label">Copy</span> <span role="img" aria-label="clipboard" id="copy-emoji">📋</span> <kbd aria-hidden="true" style="margin-left: 4px;">C</kbd></button>
+        </div>
+        <div style="margin-top: 1rem;"><span id="last-updated" class="status-meta" tabindex="0" role="note" aria-label="Last updated status. Press or focus to see detailed UTC and local timestamp.">Last updated: Just now</span></div>
+        <div id="announcer" aria-live="polite" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    window.lastUpdateTime = Date.now();
+    const isStale = () => Date.now() - window.lastUpdateTime >= 120000;
+    let lastConf = 85, history = [];
+    try {
+      history = JSON.parse(localStorage.getItem('gainzHistory') || '[]');
+    } catch (e) {
+      console.warn('localStorage is not available/accessible:', e);
+    }
+
+    const renderHistory = () => {
+      const track = document.getElementById('history-track');
+      const clearBtn = document.getElementById('clear-btn');
+      const hasHistory = history.length > 0;
+      clearBtn.disabled = !hasHistory;
+      if (hasHistory) {
+        clearBtn.setAttribute('aria-label', 'Clear signal history (Shortcut: X)');
+        clearBtn.title = 'Shortcut: X';
+      } else {
+        clearBtn.setAttribute('aria-label', 'Clear signal history (Disabled - No history to clear)');
+        clearBtn.title = 'No history to clear';
+      }
+      track.innerHTML = '<div class="history-threshold" title="Strong Threshold (85%)"></div>' +
+        (hasHistory ? history.map((s, i) => `<div class="history-pip" style="background:var(--${s.t.toLowerCase()});opacity:${0.3 + 0.7 * ((s.c-50)/50)};height:${s.c}%" title="${s.t} ${s.c}% at ${s.time} (Click or press Enter/Space to copy)" role="button" aria-label="${s.t} Signal, ${s.c}% confidence at ${s.time}. Click or press Enter to copy." tabindex="${i === 0 ? 0 : -1}" data-index="${i}"></div>`).join('') : '<div style="font-size:0.7rem;color:#64748b;width:100%;text-align:center;padding-bottom:8px">No history</div>');
+    };
+    const updateHistory = (t, c) => {
+      const time = new Date().toLocaleTimeString([], { hour12: false });
+      history.unshift({t, c, time}); if (history.length > 15) history.pop();
+      try {
+        localStorage.setItem('gainzHistory', JSON.stringify(history));
+      } catch (e) {
+        console.warn('localStorage write failed:', e);
+      }
+      renderHistory();
+    };
+    let confirmTimeout = null;
+    const cancelClearConfirm = () => {
+      const clearBtn = document.getElementById('clear-btn');
+      if (clearBtn && clearBtn.dataset.confirming === 'true') {
+        delete clearBtn.dataset.confirming;
+        if (confirmTimeout) { clearTimeout(confirmTimeout); confirmTimeout = null; }
+        clearBtn.innerHTML = 'Clear <kbd aria-hidden="true" style="margin-left: 2px; font-size: 0.6rem;">X</kbd>';
+        clearBtn.style.color = '#cbd5e1';
+        clearBtn.setAttribute('aria-label', 'Clear signal history (Shortcut: X)');
+        announce('Clear history cancelled');
+      }
+    };
+    const clearHistory = () => {
+      const clearBtn = document.getElementById('clear-btn');
+      if (!clearBtn.dataset.confirming) {
+        clearBtn.dataset.confirming = 'true';
+        clearBtn.innerHTML = 'Confirm? <kbd aria-hidden="true" style="margin-left: 2px; font-size: 0.6rem;">Esc</kbd>';
+        clearBtn.style.color = 'var(--sell)';
+        clearBtn.setAttribute('aria-label', 'Confirm clearing signal history, or press Escape to cancel');
+        announce('Confirm clearing signal history, or press Escape to cancel');
+        confirmTimeout = setTimeout(() => {
+          if (clearBtn.dataset.confirming === 'true') cancelClearConfirm();
+        }, 3000);
+        return;
+      }
+      delete clearBtn.dataset.confirming;
+      if (confirmTimeout) { clearTimeout(confirmTimeout); confirmTimeout = null; }
+      history = [];
+      hideDetail();
+      try {
+        localStorage.removeItem('gainzHistory');
+      } catch (e) {
+        console.warn('localStorage removal failed:', e);
+      }
+      renderHistory();
+      const originalHTML = 'Clear <kbd aria-hidden="true" style="margin-left: 2px; font-size: 0.6rem;">X</kbd>';
+      clearBtn.textContent = 'Cleared!';
+      clearBtn.style.color = '#cbd5e1';
+      announce('Signal history cleared');
+      setTimeout(() => { clearBtn.innerHTML = originalHTML; document.getElementById('refresh-btn').focus(); }, 1000);
+    };
+    document.getElementById('clear-btn').addEventListener('click', clearHistory);
+    document.addEventListener('click', e => {
+      const clearBtn = document.getElementById('clear-btn');
+      if (clearBtn && clearBtn.dataset.confirming === 'true' && !clearBtn.contains(e.target)) {
+        cancelClearConfirm();
+      }
+    });
+
+    window.copyHistoryItem = async (index) => {
+      const s = history[index];
+      if (!s) return;
+      const text = `[${s.time}] ${s.t} - ${s.c}% Confidence`;
+      const pip = document.querySelector(`.history-pip[data-index="${index}"]`);
+      if (pip) {
+        const originalTitle = pip.title;
+        pip.title = 'Copied!';
+        pip.classList.add('copied');
+        document.title = `✅ Copied! | GainzAlgo`;
+        updateFavicon('✅');
+        if (titleTimeout) clearTimeout(titleTimeout);
+        titleTimeout = setTimeout(() => {
+          document.title = currentTitle;
+          updateFavicon();
+          titleTimeout = null;
+        }, 2000);
+
+        // Update `#history-detail` with synchronized copy feedback
+        detail.textContent = '• ✅ Copied!';
+        detail.style.color = 'var(--buy)';
+        detail.style.opacity = '1';
+        if (detailLockTimeout) clearTimeout(detailLockTimeout);
+        detailLockTimeout = setTimeout(() => {
+          detailLockTimeout = null;
+          const activePip = document.activeElement.closest('.history-pip') || track.querySelector('.history-pip:hover');
+          if (activePip) {
+            showDetail(activePip);
+          } else {
+            hideDetail();
+          }
+        }, 2000);
+
+        announce(`Historical signal copied: ${text}`);
+        setTimeout(() => {
+          if (pip) {
+            pip.title = originalTitle;
+            pip.classList.remove('copied');
+          }
+        }, 2000);
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) { console.error('Failed to copy history: ', err); }
+    };
+
+    const track = document.getElementById('history-track');
+    const detail = document.getElementById('history-detail');
+    const showDetail = (pip) => {
+      if (detailLockTimeout) return;
+      if (!pip) return;
+      const idx = parseInt(pip.dataset.index);
+      const s = history[idx];
+      if (s) {
+        detail.textContent = `• [${s.time}] ${s.t} ${s.c}%`;
+        detail.style.color = `var(--${s.t.toLowerCase()})`;
+        detail.style.opacity = '1';
+      }
+    };
+    const hideDetail = () => {
+      if (detailLockTimeout) return;
+      detail.style.opacity = '0';
+    };
+    track.addEventListener('mouseover', e => { const pip = e.target.closest('.history-pip'); if (pip) showDetail(pip); });
+    track.addEventListener('mouseout', e => { const pip = e.target.closest('.history-pip'); if (pip) hideDetail(); });
+    track.addEventListener('focusin', e => { const pip = e.target.closest('.history-pip'); if (pip) showDetail(pip); });
+    track.addEventListener('focusout', e => { const pip = e.target.closest('.history-pip'); if (pip) hideDetail(); });
+
+    track.addEventListener('click', e => {
+      const pip = e.target.closest('.history-pip');
+      if (pip) window.copyHistoryItem(parseInt(pip.dataset.index));
+    });
+    track.addEventListener('keydown', e => {
+      const pips = Array.from(document.querySelectorAll('.history-pip'));
+      if (pips.length === 0) return;
+      const currIdx = pips.indexOf(document.activeElement);
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (currIdx === -1) return;
+        const nextIdx = e.key === 'ArrowLeft' ? (currIdx + 1) % pips.length : (currIdx - 1 + pips.length) % pips.length;
+        pips.forEach((p, i) => p.tabIndex = i === nextIdx ? 0 : -1);
+        pips[nextIdx].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        pips.forEach((p, i) => p.tabIndex = i === 0 ? 0 : -1);
+        pips[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        const lastIdx = pips.length - 1;
+        pips.forEach((p, i) => p.tabIndex = i === lastIdx ? 0 : -1);
+        pips[lastIdx].focus();
+      }
+      if (e.key === 'Enter' || e.key === ' ') {
+        const pip = e.target.closest('.history-pip');
+        if (pip) { e.preventDefault(); window.copyHistoryItem(parseInt(pip.dataset.index)); }
+      }
+    });
+    if (history.length === 0) updateHistory('BUY', 85); else renderHistory();
+    let currentTitle = document.title;
+    let titleTimeout = null;
+    let copyTimeout = null;
+    let detailLockTimeout = null;
+    const btn = document.getElementById('refresh-btn');
+    const announcer = document.getElementById('announcer');
+    const announce = (msg) => { announcer.textContent = ''; setTimeout(() => announcer.textContent = msg, 50); };
+
+    let isMetadataExpanded = false;
+    window.updateTimeDisplay = () => {
+      const elapsed = Math.floor((Date.now() - window.lastUpdateTime) / 1000), stale = elapsed >= 120, el = document.getElementById('last-updated');
+      const d = new Date(window.lastUpdateTime);
+      const preciseTime = `[Local: ${d.toLocaleTimeString()} | UTC: ${d.toUTCString().split(' ')[4]}]`;
+      let text = elapsed < 5 ? 'Last updated: Just now' : (elapsed < 60 ? `Last updated: ${elapsed}s ago` : `Last updated: ${Math.floor(elapsed / 60)}m ago`);
+      const badge = document.querySelector('.live-badge');
+      if (stale) {
+        el.classList.add('stale-warning'); text += ' (Stale)';
+        if (!badge.classList.contains('stale')) { badge.classList.add('stale'); badge.querySelector('span:last-child').textContent = 'STALE'; badge.setAttribute('aria-label', 'Network active - Data is stale'); updateFavicon('⏳'); }
+      } else if (badge.classList.contains('stale')) { el.classList.remove('stale-warning'); badge.classList.remove('stale'); badge.querySelector('span:last-child').textContent = 'LIVE'; badge.setAttribute('aria-label', 'Live data connection active'); updateFavicon(); }
+
+      const displayedText = isMetadataExpanded ? `${text} ${preciseTime}` : text;
+      el.textContent = displayedText;
+      el.setAttribute('aria-label', `${text}. Precise time: ${preciseTime}.`);
+      el.title = `Local: ${d.toLocaleTimeString()} | UTC: ${d.toUTCString().split(' ')[4]}`;
+    };
+    setInterval(window.updateTimeDisplay, 1000);
+
+    const metaEl = document.getElementById('last-updated');
+    const setMetaExpanded = (expanded) => {
+      isMetadataExpanded = expanded;
+      window.updateTimeDisplay();
+    };
+    metaEl.addEventListener('mouseenter', () => setMetaExpanded(true));
+    metaEl.addEventListener('mouseleave', () => setMetaExpanded(false));
+    metaEl.addEventListener('focus', () => setMetaExpanded(true));
+    metaEl.addEventListener('blur', () => setMetaExpanded(false));
+
+    window.updateTimeDisplay();
+
+    const animateValue = (id, start, end, duration) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.getElementById(id).textContent = end;
+        return;
+      }
+      const obj = document.getElementById(id);
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.textContent = Math.floor(progress * (end - start) + start);
+        if (progress < 1) window.requestAnimationFrame(step);
+      };
+      window.requestAnimationFrame(step);
+    };
+
+    const updateFavicon = (overrideIcon) => {
+      const isOnline = navigator.onLine, stale = Date.now() - window.lastUpdateTime >= 120000, signal = document.getElementById('signal-text').textContent;
+      const char = overrideIcon || (isOnline ? (stale ? '⏳' : (signal === 'BUY' ? '▲' : '▼')) : '⚠️');
+      const color = (char === '✅' || (isOnline && !stale && signal === 'BUY')) ? '#34d399' : (isOnline && !stale ? '#fca5a5' : '#fbbf24');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#1e293b"/><text y=".85em" x="50%" text-anchor="middle" font-size="80" fill="${color}">${char}</text></svg>`;
+      let link = document.querySelector("link[rel*='icon']");
+      if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+      link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    };
+
+    const refresh = async () => {
+      if (btn.disabled) return;
+      if (copyTimeout) {
+        clearTimeout(copyTimeout); copyTimeout = null;
+        const cBtn = document.getElementById('copy-btn');
+        cBtn.classList.remove('copied');
+        document.getElementById('copy-label').textContent = 'Copy';
+        document.getElementById('copy-emoji').textContent = '📋';
+        cBtn.setAttribute('aria-label', 'Copy signal (Shortcut: C)');
+        document.getElementById('signal-display').title = 'Click or press C to copy';
+        document.title = currentTitle;
+      }
+      btn.disabled = true;
+      const label = document.getElementById('refresh-label');
+      const refreshIcon = document.getElementById('refresh-icon');
+      const signalDisplay = document.getElementById('signal-display');
+      const meterContainer = document.querySelector('.meter-container');
+      const originalText = label.textContent, originalLabel = btn.getAttribute('aria-label');
+      label.textContent = 'Refreshing...'; btn.setAttribute('aria-label', 'Refreshing signal...');
+      refreshIcon.classList.add('spinning');
+      signalDisplay.classList.add('loading');
+      meterContainer.classList.add('loading');
+
+      await new Promise(r => setTimeout(r, 800));
+      const confidence = Math.floor(Math.random() * 20) + 75;
+      const delta = confidence - lastConf;
+      const trend = confidence > lastConf ? 'up' : confidence < lastConf ? 'down' : 'stable';
+      const trendIcon = { up: '↑', down: '↓', stable: '→' }[trend];
+      const trendColor = { up: 'var(--buy)', down: 'var(--sell)', stable: 'var(--text)' }[trend];
+      const trendLabel = { up: 'increasing', down: 'decreasing', stable: 'stable' }[trend];
+      const tier = confidence >= 85 ? 'Strong' : 'Moderate';
+      const signalType = Math.random() > 0.5 ? 'BUY' : 'SELL';
+      const signalIconChar = signalType === 'BUY' ? '▲' : '▼';
+      const deltaText = delta !== 0 ? ` (${delta > 0 ? '+' : ''}${delta}%)` : '';
+
+      currentTitle = `${signalIconChar} ${signalType} ${confidence}%${deltaText} | GainzAlgo`;
+      if (!titleTimeout) document.title = currentTitle;
+
+      animateValue('conf-val', lastConf, confidence, 500);
+      const tierEl = document.getElementById('conf-tier');
+      tierEl.textContent = tier;
+      tierEl.style.color = signalType === 'BUY' ? (tier === 'Strong' ? 'var(--buy)' : 'var(--warning)') : 'var(--sell)';
+
+      const deltaEl = document.getElementById('conf-delta');
+      deltaEl.textContent = delta !== 0 ? `${delta > 0 ? '+' : ''}${delta}%` : '';
+      deltaEl.style.color = delta > 0 ? 'var(--buy)' : delta < 0 ? 'var(--sell)' : 'var(--text)';
+
+      const signalIcon = document.getElementById('signal-icon');
+      const signalText = document.getElementById('signal-text');
+      signalText.textContent = signalType;
+      signalIcon.textContent = signalType === 'BUY' ? '▲' : '▼';
+      signalDisplay.className = `signal ${signalType.toLowerCase()}${tier === 'Strong' ? ' glow' : ''}`;
+      signalDisplay.setAttribute('aria-label', `${signalType} Signal Detected. Click or press C to copy.`);
+
+      const trendEl = document.getElementById('trend-icon');
+      trendEl.textContent = trendIcon;
+      trendEl.style.color = trendColor;
+      trendEl.setAttribute('aria-label', `Trend: ${trendLabel}`);
+
+      lastConf = confidence;
+      const fill = document.getElementById('meter-fill');
+      fill.style.width = `${confidence}%`;
+      fill.style.background = `var(--${signalType === 'BUY' ? (tier === 'Strong' ? 'buy' : 'warning') : 'sell'})`;
+      fill.parentElement.setAttribute('aria-valuenow', confidence);
+      const ariaDelta = delta !== 0 ? ` (${delta > 0 ? 'up' : 'down'} ${Math.abs(delta)}%)` : '';
+      fill.parentElement.setAttribute('aria-valuetext', `${confidence}% ${tier} ${signalType}${ariaDelta}`);
+      window.lastUpdateTime = Date.now();
+      window.updateTimeDisplay();
+      updateHistory(signalType, confidence);
+      updateFavicon();
+      label.textContent = 'Updated!'; btn.setAttribute('aria-label', 'Signal updated successfully');
+      refreshIcon.classList.remove('spinning');
+      signalDisplay.classList.remove('loading');
+      meterContainer.classList.remove('loading');
+      announce(`${signalType} Signal updated: ${confidence}% confidence`);
+      setTimeout(() => { label.textContent = originalText; btn.setAttribute('aria-label', originalLabel); btn.disabled = false; }, 1000);
+    };
+    btn.addEventListener('click', refresh);
+
+    const copyBtn = document.getElementById('copy-btn');
+    const copySignal = async () => {
+      const confidence = document.getElementById('conf-val').textContent;
+      const tier = document.getElementById('conf-tier').textContent;
+      const signalType = document.getElementById('signal-text').textContent;
+      const timestamp = new Date(window.lastUpdateTime).toLocaleTimeString([], { hour12: false });
+      const text = `[${timestamp}] ${signalType} - ${confidence}% Confidence (${tier})`;
+
+      const copyLabel = document.getElementById('copy-label');
+      const copyEmoji = document.getElementById('copy-emoji');
+      const signalIcon = document.getElementById('signal-icon');
+      const signalDisplay = document.getElementById('signal-display');
+      const originalText = copyLabel.textContent;
+      const originalLabel = copyBtn.getAttribute('aria-label');
+      const originalEmoji = copyEmoji.textContent;
+      const originalSignalTitle = signalDisplay.title;
+
+      // Apply instant visual & accessibility feedback
+      copyBtn.classList.add('copied');
+      copyLabel.textContent = 'Copied!';
+      copyEmoji.textContent = '✅';
+      signalIcon.textContent = '✅';
+      copyBtn.setAttribute('aria-label', 'Signal copied to clipboard');
+      copyBtn.style.color = 'var(--buy)';
+      copyBtn.style.borderColor = 'var(--buy)';
+      signalDisplay.title = 'Copied!';
+      document.title = `✅ Copied! | GainzAlgo`;
+      updateFavicon('✅');
+
+      if (titleTimeout) clearTimeout(titleTimeout);
+      titleTimeout = setTimeout(() => {
+        document.title = currentTitle;
+        updateFavicon();
+        titleTimeout = null;
+      }, 2000);
+      announce('Signal copied to clipboard');
+
+      if (copyTimeout) clearTimeout(copyTimeout);
+      copyTimeout = setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyLabel.textContent = originalText;
+        copyEmoji.textContent = originalEmoji;
+        signalIcon.textContent = document.getElementById('signal-text').textContent === 'BUY' ? '▲' : '▼';
+        copyBtn.setAttribute('aria-label', originalLabel);
+        copyBtn.style.color = 'var(--primary)';
+        copyBtn.style.borderColor = 'var(--primary)';
+        signalDisplay.title = originalSignalTitle;
+        copyTimeout = null;
+      }, 2000);
+
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+      }
+    };
+    copyBtn.addEventListener('click', copySignal);
+    const signalDisplay = document.getElementById('signal-display');
+    signalDisplay.addEventListener('click', () => {
+      signalDisplay.classList.add('btn-active');
+      copySignal();
+      setTimeout(() => signalDisplay.classList.remove('btn-active'), 150);
+    });
+    signalDisplay.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copySignal(); } });
+
+    document.addEventListener('keydown', e => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
+      const key = e.key.toLowerCase();
+      if (key === 'r') {
+        if (!btn.disabled) {
+          btn.classList.add('btn-active');
+          refresh();
+          setTimeout(() => btn.classList.remove('btn-active'), 150);
+        }
+      }
+      if (key === 'c') {
+        [copyBtn, signalDisplay].forEach(el => el.classList.add('btn-active'));
+        copySignal();
+        setTimeout(() => [copyBtn, signalDisplay].forEach(el => el.classList.remove('btn-active')), 150);
+      }
+      if (key === 'escape') {
+        cancelClearConfirm();
+      }
+      if (key === 'x') {
+        const clearBtn = document.getElementById('clear-btn');
+        if (!clearBtn.disabled) {
+          clearBtn.classList.add('btn-active');
+          clearHistory();
+          setTimeout(() => clearBtn.classList.remove('btn-active'), 150);
+        }
+      }
+    });
+
+    const updateOnlineStatus = (isInit = false) => {
+      const isOnline = navigator.onLine;
+      const badge = document.querySelector('.live-badge');
+      const pulse = badge.querySelector('.pulse');
+      const text = badge.querySelector('span:last-child');
+      const refreshBtn = document.getElementById('refresh-btn');
+
+      badge.setAttribute('aria-label', isOnline ? 'Live data connection active' : 'Network connection lost');
+      pulse.style.background = isOnline ? 'var(--buy)' : 'var(--sell)';
+      text.textContent = isOnline ? 'LIVE' : 'OFFLINE';
+      text.style.color = isOnline ? 'var(--buy)' : 'var(--sell)';
+
+      if (refreshBtn) {
+        refreshBtn.disabled = !isOnline;
+        if (!isOnline) {
+          refreshBtn.title = 'Refresh disabled (Offline)';
+          refreshBtn.setAttribute('aria-label', 'Refresh disabled (Offline)');
+        } else {
+          refreshBtn.title = 'Shortcut: R';
+          refreshBtn.setAttribute('aria-label', 'Refresh signal (Shortcut: R)');
+        }
+      }
+
+      updateFavicon();
+      if (!isInit) {
+        announce(isOnline ? 'Network connection restored' : 'Network connection lost');
+        if (isOnline && isStale()) refresh();
+      }
+    };
+
+    window.addEventListener('online', () => updateOnlineStatus(false));
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && isStale()) refresh(); });
+    window.addEventListener('offline', () => updateOnlineStatus(false));
+    updateOnlineStatus(true);
+  </script>
+</body>
+</html>
